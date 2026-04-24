@@ -1102,7 +1102,7 @@ class Orchestra(
         val tmpImage = File.createTempFile("maestro_ocr_", ".png")
         try {
             maestro.takeScreenshot(tmpImage, false)
-            val point = ocrFindCenter(command.text, tmpImage)
+            val point = ocrFindCenter(command.text, tmpImage, command.psm)
                 ?: run {
                     System.err.println("[tapOnOcr] screenshot saved for inspection: ${tmpImage.absolutePath}")
                     throw MaestroException.ElementNotFound(
@@ -1122,7 +1122,7 @@ class Orchestra(
         val tmpImage = File.createTempFile("maestro_ocr_", ".png")
         try {
             maestro.takeScreenshot(tmpImage, false)
-            ocrFindCenter(command.text, tmpImage)
+            ocrFindCenter(command.text, tmpImage, command.psm)
                 ?: throw MaestroException.ElementNotFound(
                     message = "OCR: text not visible: '${command.text}'",
                     hierarchyRoot = maestro.viewHierarchy().root,
@@ -1138,7 +1138,7 @@ class Orchestra(
         val tmpImage = File.createTempFile("maestro_ocr_", ".png")
         try {
             maestro.takeScreenshot(tmpImage, false)
-            val point = ocrFindCenter(command.text, tmpImage)
+            val point = ocrFindCenter(command.text, tmpImage, command.psm)
             if (point != null) {
                 throw MaestroException.AssertionFailure(
                     message = "OCR: text is visible but expected not to be: '${command.text}'",
@@ -1152,11 +1152,18 @@ class Orchestra(
         }
     }
 
-    private suspend fun ocrFindCenter(text: String, imageFile: File): Point? {
+    private suspend fun ocrFindCenter(text: String, imageFile: File, psm: Int? = null): Point? {
         val tmpBase = File.createTempFile("maestro_ocr_tsv_", "")
         try {
             val proc = try {
-                ProcessBuilder("tesseract", imageFile.absolutePath, tmpBase.absolutePath, "tsv")
+                val cmd = buildList {
+                    add("tesseract")
+                    if (psm != null) { add("--psm"); add(psm.toString()) }
+                    add(imageFile.absolutePath)
+                    add(tmpBase.absolutePath)
+                    add("tsv")
+                }
+                ProcessBuilder(cmd)
                     .redirectErrorStream(true)
                     .start()
             } catch (e: java.io.IOException) {

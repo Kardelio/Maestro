@@ -1188,6 +1188,7 @@ data class TapOnOcrCommand(
     val text: String,
     override val label: String? = null,
     override val optional: Boolean = false,
+    val psm: Int? = null,
 ) : Command {
     override val originalDescription: String
         get() = "Tap on OCR text '$text'"
@@ -1204,6 +1205,7 @@ data class AssertVisibleOcrCommand(
     val text: String,
     override val label: String? = null,
     override val optional: Boolean = false,
+    val psm: Int? = null,
 ) : Command {
     override val originalDescription: String
         get() = "Assert visible via OCR: '$text'"
@@ -1220,6 +1222,7 @@ data class AssertNotVisibleOcrCommand(
     val text: String,
     override val label: String? = null,
     override val optional: Boolean = false,
+    val psm: Int? = null,
 ) : Command {
     override val originalDescription: String
         get() = "Assert not visible via OCR: '$text'"
